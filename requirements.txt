@@ -4,4 +4,5 @@ keras
 opencv-contrib-python-headless
 tensorflow-cpu
 streamlit_webrtc
-
+TensorFlow
+scikit-learn
