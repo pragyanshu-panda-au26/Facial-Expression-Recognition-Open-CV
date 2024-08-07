@@ -17,7 +17,7 @@ json_file.close()
 classifier = model_from_json(loaded_model_json, custom_objects={'Sequential': Sequential})
 
 # Load weights into new model
-classifier.load_weights("model1.h5")
+classifier.load_weights("model.h5")
 
 # Load face cascade
 try:
