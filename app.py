@@ -6,6 +6,7 @@ from keras.models import model_from_json, Sequential
 from keras.preprocessing.image import img_to_array
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration, WebRtcMode
 import json
+import os
 
 # Load model
 emotion_dict = {0: 'angry', 1: 'happy', 2: 'neutral', 3: 'sad', 4: 'surprise'}
@@ -16,8 +17,12 @@ loaded_model_json = json_file.read()
 json_file.close()
 classifier = model_from_json(loaded_model_json, custom_objects={'Sequential': Sequential})
 
+# Check if the file exists
+if not os.path.exists("model1.h5"):
+    raise FileNotFoundError("The model1.h5 file was not found.")
+
 # Load weights into new model
-classifier.load_weights("model.h5")
+classifier.load_weights("model1.h5")
 
 # Load face cascade
 try:
