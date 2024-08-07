@@ -18,11 +18,11 @@ json_file.close()
 classifier = model_from_json(loaded_model_json, custom_objects={'Sequential': Sequential})
 
 # Check if the file exists
-if not os.path.exists("model1.h5"):
+if not os.path.exists("model.h5"):
     raise FileNotFoundError("The model1.h5 file was not found.")
 
 # Load weights into new model
-classifier.load_weights("model1.h5")
+classifier.load_weights("model.h5")
 
 # Load face cascade
 try:
