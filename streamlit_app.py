@@ -26,36 +26,40 @@ class EmotionDetector(VideoProcessorBase):
         self.face_mesh = face_mesh
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
-        img = frame.to_ndarray(format="bgr24")
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = self.face_classifier.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+        try:
+            img = frame.to_ndarray(format="bgr24")
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = self.face_classifier.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
 
-        for (x, y, w, h) in faces:
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
-            roi_gray = gray[y:y + h, x:x + w]
-            roi_gray = cv2.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
+            for (x, y, w, h) in faces:
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
+                roi_gray = gray[y:y + h, x:x + w]
+                roi_gray = cv2.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
 
-            if np.sum([roi_gray]) != 0:
-                roi = roi_gray.astype('float') / 255.0
-                roi = img_to_array(roi)
-                roi = np.expand_dims(roi, axis=0)
+                if np.sum([roi_gray]) != 0:
+                    roi = roi_gray.astype('float') / 255.0
+                    roi = img_to_array(roi)
+                    roi = np.expand_dims(roi, axis=0)
 
-                prediction = self.classifier.predict(roi)[0]
-                label = self.emotion_labels[prediction.argmax()]
-                label_position = (x, y)
-                cv2.putText(img, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    prediction = self.classifier.predict(roi)[0]
+                    label = self.emotion_labels[prediction.argmax()]
+                    label_position = (x, y)
+                    cv2.putText(img, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-                # Convert the region of interest to RGB for Mediapipe processing
-                roi_rgb = cv2.cvtColor(img[y:y+h, x:x+w], cv2.COLOR_BGR2RGB)
-                results = self.face_mesh.process(roi_rgb)
+                    # Convert the region of interest to RGB for Mediapipe processing
+                    roi_rgb = cv2.cvtColor(img[y:y+h, x:x+w], cv2.COLOR_BGR2RGB)
+                    results = self.face_mesh.process(roi_rgb)
 
-                # Draw the facial landmarks using Mediapipe
-                if results.multi_face_landmarks:
-                    for face_landmarks in results.multi_face_landmarks:
-                        for landmark in face_landmarks.landmark:
-                            x_point = int(landmark.x * w) + x
-                            y_point = int(landmark.y * h) + y
-                            cv2.circle(img, (x_point, y_point), 1, (0, 0, 255), -1)
+                    # Draw the facial landmarks using Mediapipe
+                    if results.multi_face_landmarks:
+                        for face_landmarks in results.multi_face_landmarks:
+                            for landmark in face_landmarks.landmark:
+                                x_point = int(landmark.x * w) + x
+                                y_point = int(landmark.y * h) + y
+                                cv2.circle(img, (x_point, y_point), 1, (0, 0, 255), -1)
+
+        except Exception as e:
+            st.error(f"Error processing frame: {e}")
 
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
