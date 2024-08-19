@@ -1,13 +1,8 @@
 streamlit
-pandas
-numpy
-scikit-learn
+opencv-python-headless
+tensorflow
 keras
-TensorFlow
-OpenCV
 dlib
 imutils
-Pillow
-scipy
-h5py
-streamlit_webrtc
+streamlit-webrtc
+av
