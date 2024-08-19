@@ -1,0 +1,13 @@
+streamlit
+pandas
+numpy
+scikit-learn
+keras
+TensorFlow
+OpenCV
+dlib
+imutils
+Pillow
+scipy
+h5py
+streamlit_webrtc
