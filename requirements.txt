@@ -2,7 +2,7 @@ streamlit
 opencv-python-headless
 tensorflow
 keras
-dlib
+mediapipe
 imutils
 streamlit-webrtc
 av

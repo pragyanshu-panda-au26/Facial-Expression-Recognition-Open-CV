@@ -5,18 +5,18 @@ import cv2
 import numpy as np
 from keras.models import load_model
 from keras.preprocessing.image import img_to_array
-import dlib
-from imutils import face_utils
+import mediapipe as mp
 
-# Load the face detector and facial landmark predictor from dlib
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
-
+# Load the face classifier and emotion detection model
 face_classifier = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 classifier = load_model('modelv1.h5')
 classifier.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
+
+# Initialize Mediapipe face mesh solution
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(static_image_mode=False, max_num_faces=1, min_detection_confidence=0.5)
 
 class EmotionDetector(VideoProcessorBase):
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
@@ -40,14 +40,17 @@ class EmotionDetector(VideoProcessorBase):
                 label_position = (x, y)
                 cv2.putText(img, label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-                # Convert the ROI to a dlib rectangle
-                rect = dlib.rectangle(int(x), int(y), int(x + w), int(y + h))
-                shape = predictor(gray, rect)
-                shape = face_utils.shape_to_np(shape)
+                # Convert the region of interest to RGB for Mediapipe processing
+                roi_rgb = cv2.cvtColor(img[y:y+h, x:x+w], cv2.COLOR_BGR2RGB)
+                results = face_mesh.process(roi_rgb)
 
-                # Draw the facial landmarks
-                for (i, (x_point, y_point)) in enumerate(shape):
-                    cv2.circle(img, (x_point, y_point), 1, (0, 0, 255), -1)
+                # Draw the facial landmarks using Mediapipe
+                if results.multi_face_landmarks:
+                    for face_landmarks in results.multi_face_landmarks:
+                        for landmark in face_landmarks.landmark:
+                            x_point = int(landmark.x * w) + x
+                            y_point = int(landmark.y * h) + y
+                            cv2.circle(img, (x_point, y_point), 1, (0, 0, 255), -1)
 
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
